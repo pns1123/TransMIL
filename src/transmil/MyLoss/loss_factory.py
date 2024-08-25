@@ -19,10 +19,10 @@ from pytorch_toolbelt import losses as L
 def create_loss(args, w1=1.0, w2=0.5):
     conf_loss = args.base_loss
     ### MulticlassJaccardLoss(classes=np.arange(11)
-    # mode = args.base_loss #BINARY_MODE \MULTICLASS_MODE \MULTILABEL_MODE 
+    # mode = args.base_loss #BINARY_MODE \MULTICLASS_MODE \MULTILABEL_MODE
     loss = None
-    if hasattr(nn, conf_loss): 
-        loss = getattr(nn, conf_loss)() 
+    if hasattr(nn, conf_loss):
+        loss = getattr(nn, conf_loss)()
     #binary loss
     elif conf_loss == "focal":
         loss = L.BinaryFocalLoss()

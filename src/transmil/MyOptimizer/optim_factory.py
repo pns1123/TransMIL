@@ -76,9 +76,9 @@ def create_optimizer(args, model, filter_bias_and_bn=True):
         optimizer = Nadam(parameters, **opt_args)
     elif opt_lower == 'radam':
         optimizer = RAdam(parameters, **opt_args)
-    elif opt_lower == 'adamp':        
+    elif opt_lower == 'adamp':
         optimizer = AdamP(parameters, wd_ratio=0.01, nesterov=True, **opt_args)
-    elif opt_lower == 'sgdp':        
+    elif opt_lower == 'sgdp':
         optimizer = SGDP(parameters, momentum=args.momentum, nesterov=True, **opt_args)
     elif opt_lower == 'adadelta':
         optimizer = optim.Adadelta(parameters, **opt_args)

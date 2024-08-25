@@ -59,9 +59,9 @@ class TransMIL(nn.Module):
     def forward(self, **kwargs):
 
         h = kwargs['data'].float() #[B, n, 1024]
-        
+
         h = self._fc1(h) #[B, n, 512]
-        
+
         #---->pad
         H = h.shape[1]
         _H, _W = int(np.ceil(np.sqrt(H))), int(np.ceil(np.sqrt(H)))
@@ -78,7 +78,7 @@ class TransMIL(nn.Module):
 
         #---->PPEG
         h = self.pos_layer(h, _H, _W) #[B, N, 512]
-        
+
         #---->Translayer x2
         h = self.layer2(h) #[B, N, 512]
 

@@ -14,7 +14,7 @@ class DataInterface(pl.LightningDataModule):
             batch_size (int, optional): [description]. Defaults to 64.
             num_workers (int, optional): [description]. Defaults to 8.
             dataset_name (str, optional): [description]. Defaults to ''.
-        """        
+        """
         super().__init__()
 
         self.train_batch_size = train_batch_size
@@ -25,7 +25,7 @@ class DataInterface(pl.LightningDataModule):
         self.kwargs = kwargs
         self.load_data_module()
 
- 
+
 
     def prepare_data(self):
         # 1. how to download
@@ -35,7 +35,7 @@ class DataInterface(pl.LightningDataModule):
 
     def setup(self, stage=None):
         # 2. how to split, argument
-        """  
+        """
         - count number of classes
 
         - build vocabulary
@@ -48,7 +48,7 @@ class DataInterface(pl.LightningDataModule):
         if stage == 'fit' or stage is None:
             self.train_dataset = self.instancialize(state='train')
             self.val_dataset = self.instancialize(state='val')
- 
+
 
         # Assign test dataset for use in dataloader(s)
         if stage == 'test' or stage is None:
@@ -74,7 +74,7 @@ class DataInterface(pl.LightningDataModule):
         except:
             raise ValueError(
                 'Invalid Dataset File Name or Invalid Class Name!')
-    
+
     def instancialize(self, **other_args):
         """ Instancialize a model using the corresponding parameters
             from self.hparams dictionary. You can also input any args

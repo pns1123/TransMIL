@@ -14,11 +14,11 @@ def load_loggers(cfg):
 
     log_path = cfg.General.log_path
     Path(log_path).mkdir(exist_ok=True, parents=True)
-    log_name = Path(cfg.config).parent 
+    log_name = Path(cfg.config).parent
     version_name = Path(cfg.config).name[:-5]
     cfg.log_path = Path(log_path) / log_name / version_name / f'fold{cfg.Data.fold}'
     print(f'---->Log dir: {cfg.log_path}')
-    
+
     #---->TensorBoard
     tb_logger = pl_loggers.TensorBoardLogger(log_path+str(log_name),
                                              name = version_name, version = f'fold{cfg.Data.fold}',
@@ -26,7 +26,7 @@ def load_loggers(cfg):
     #---->CSV
     csv_logger = pl_loggers.CSVLogger(log_path+str(log_name),
                                       name = version_name, version = f'fold{cfg.Data.fold}', )
-    
+
     return [tb_logger, csv_logger]
 
 

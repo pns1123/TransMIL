@@ -1,6 +1,6 @@
 lightning_logs/
 logs/
-TestDataset/pt_files
+src/transmil/TestDataset/pt_files
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
