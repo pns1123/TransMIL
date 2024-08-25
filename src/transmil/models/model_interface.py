@@ -39,8 +39,8 @@ class ModelInterface(pl.LightningModule):
             self.AUROC = torchmetrics.AUROC(task="multiclass", average="macro")
             metrics = torchmetrics.MetricCollection(
                 [
-                    torchmetrics.Accuracy(task="multiclass", average="micro"),
-                    torchmetrics.CohenKappa(task="multiclass"),
+                    # torchmetrics.Accuracy(task="multiclass", average="micro"),
+                    # torchmetrics.CohenKappa(task="multiclass"),
                     # torchmetrics.F1(num_classes=self.n_classes, average="macro"),
                     # torchmetrics.Recall(average="macro", num_classes=self.n_classes),
                     # torchmetrics.Precision(average="macro", num_classes=self.n_classes),
@@ -53,7 +53,7 @@ class ModelInterface(pl.LightningModule):
             self.AUROC = torchmetrics.AUROC(task="binary", average="macro")
             metrics = torchmetrics.MetricCollection(
                 [
-                    torchmetrics.Accuracy(task="binary", average="micro"),
+                    #torchmetrics.Accuracy(task="binary", average="micro"),
                     # torchmetrics.CohenKappa(num_classes=2),
                     # torchmetrics.F1(num_classes=2, average="macro"),
                     # torchmetrics.Recall(average="macro", num_classes=2),

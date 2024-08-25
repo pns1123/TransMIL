@@ -23,11 +23,11 @@ Data:
 
     train_dataloader:
         batch_size: 1
-        num_workers: 8
+        num_workers: 2
 
     test_dataloader:
         batch_size: 1
-        num_workers: 8
+        num_workers: 2
 
 Model:
     name: TransMIL
