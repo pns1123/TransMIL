@@ -1,31 +1,11 @@
-,filename,label0,label1,group
-0,test0,0,1,train
-1,test0,0,1,test
-2,test0,0,1,validation
-3,test1,0,1,train
-4,test1,0,1,test
-5,test1,0,1,validation
-6,test2,0,1,train
-7,test2,0,1,test
-8,test2,0,1,validation
-9,test3,0,1,train
-10,test3,0,1,test
-11,test3,0,1,validation
-12,test4,0,1,train
-13,test4,0,1,test
-14,test4,0,1,validation
-15,test5,0,1,train
-16,test5,0,1,test
-17,test5,0,1,validation
-18,test6,0,1,train
-19,test6,0,1,test
-20,test6,0,1,validation
-21,test7,0,1,train
-22,test7,0,1,test
-23,test7,0,1,validation
-24,test8,0,1,train
-25,test8,0,1,test
-26,test8,0,1,validation
-27,test9,0,1,train
-28,test9,0,1,test
-29,test9,0,1,validation
+import pandas as pd
+
+labels = [
+    {"filename": f"test{k}", "label0": 0, "label1": 1, "group": group}
+    for k in range(1, 11)
+    for group in ["train", "test", "validation"]
+]
+
+print(labels)
+df = pd.DataFrame.from_records(labels)
+df.to_csv("test_labels.csv")

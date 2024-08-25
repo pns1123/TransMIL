@@ -877,15 +877,15 @@ wheels = [
 
 [[package]]
 name = "nystrom-attention"
-version = "0.0.9"
+version = "0.0.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "einops" },
     { name = "torch" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/28/3b/385efaafb77374d69318fd71feca7859e5ca71c434ca6247eee0349e4aab/nystrom-attention-0.0.9.tar.gz", hash = "sha256:f2836b1cba87952811625c3472ec12972d914ea860bef668e528b6e6af507ebb", size = 3969 }
+sdist = { url = "https://files.pythonhosted.org/packages/cd/1c/0f6a30cc92cf41e4261130965566f979c2e7f99cb600a41875ec8fd11cef/nystrom-attention-0.0.11.tar.gz", hash = "sha256:9e5b272643409d75a76bcea58534d9edf9667668cebf3fbe5091d3902f65f338", size = 3969 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8c/2f/fdc65e75669345f10ecde030c630bf9e49cd5d2ffc3dc0be101b02e698a1/nystrom_attention-0.0.9-py3-none-any.whl", hash = "sha256:aa84877585144aaa4e7e7dfb799144ab81dfb4e5c2bbefbb8f202d7e0d675bc2", size = 4522 },
+    { url = "https://files.pythonhosted.org/packages/f6/b5/a26bcdc5b4cd9a7161c7a24b4fc1fc5bdd1c0b7f5b12a50e2d02f1d36085/nystrom_attention-0.0.11-py3-none-any.whl", hash = "sha256:aacc579ea9c97f331fa464863265dff228109d6a4916e441742fef7e7d06438c", size = 4541 },
 ]
 
 [[package]]
@@ -1509,7 +1509,7 @@ requires-dist = [
     { name = "nvidia-nccl-cu12", specifier = "==2.20.5" },
     { name = "nvidia-nvjitlink-cu12", specifier = "==12.6.20" },
     { name = "nvidia-nvtx-cu12", specifier = "==12.1.105" },
-    { name = "nystrom-attention", specifier = "==0.0.9" },
+    { name = "nystrom-attention", specifier = "==0.0.11" },
     { name = "opencv-python", specifier = "==4.10.0.84" },
     { name = "opencv-python-headless", specifier = "==4.10.0.84" },
     { name = "packaging", specifier = "==24.1" },
