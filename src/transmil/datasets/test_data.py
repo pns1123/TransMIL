@@ -24,8 +24,10 @@ class TestData(data.Dataset):
         self.shuffle = self.dataset_cfg.data_shuffle
 
         # ---->split dataset
-        self.data = self.slide_data[self.slide_data["group"] == state]["filename"]
-        self.label = self.slide_data[self.slide_data["group"] == state]["label0"]
+        # self.data = self.slide_data[self.slide_data["group"] == state]["filename"]
+        # self.label = self.slide_data[self.slide_data["group"] == state]["label0"]
+        self.data = self.slide_data["filename"]
+        self.label = self.slide_data["label0"]
 
     def __len__(self):
         return len(self.data)
