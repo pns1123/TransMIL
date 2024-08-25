@@ -16,7 +16,7 @@ from pytorch_lightning import Trainer
 def make_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", default="train", type=str)
-    parser.add_argument("--config", default="Camelyon/TransMIL.yaml", type=str)
+    parser.add_argument("--config", default="TestDataset/TransMIL.yaml", type=str)
     parser.add_argument("--gpus", default=[2])
     parser.add_argument("--fold", default=0)
     args = parser.parse_args()
@@ -53,15 +53,18 @@ def main(cfg):
         "data": cfg.Data,
         "log": cfg.log_path,
     }
+    print(ModelInterface_dict)
     model = ModelInterface(**ModelInterface_dict)
 
     # ---->Instantiate Trainer
     trainer = Trainer(
         num_sanity_val_steps=0,
-        logger=cfg.load_loggers,
+        # logger=cfg.load_loggers,
         callbacks=cfg.callbacks,
         max_epochs=cfg.General.epochs,
         accelerator="cpu",
+        # devices=cfg.General.devices,
+        # gpus=cfg.General.gpus,
         # amp_level=cfg.General.amp_level,
         precision=cfg.General.precision,
         accumulate_grad_batches=cfg.General.grad_acc,

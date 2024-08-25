@@ -1,0 +1,4 @@
+,filename,label0,label1,group
+0,test3,0,1,train
+1,test1,0,0,validation
+2,test2,1,1,test
