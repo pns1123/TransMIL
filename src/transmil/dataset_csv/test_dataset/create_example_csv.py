@@ -2,7 +2,7 @@ import pandas as pd
 
 labels = [
     {"filename": f"test{k}", "label0": 0, "label1": 1, "group": group}
-    for k in range(10)
+    for k in range(1, 11)
     for group in ["train", "test", "validation"]
 ]
 
