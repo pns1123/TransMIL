@@ -119,6 +119,9 @@ class ModelInterface(pl.LightningModule):
         return {"logits": logits, "Y_prob": Y_prob, "Y_hat": Y_hat, "label": label}
 
     def validation_epoch_end(self, val_step_outputs):
+        pass
+
+    def _validation_epoch_end(self, val_step_outputs):
         logits = torch.cat([x["logits"] for x in val_step_outputs], dim=0)
         probs = torch.cat([x["Y_prob"] for x in val_step_outputs], dim=0)
         max_probs = torch.stack([x["Y_hat"] for x in val_step_outputs])

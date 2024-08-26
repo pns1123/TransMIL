@@ -32,7 +32,7 @@ def main(cfg):
     cfg.load_loggers = load_loggers(cfg)
 
     # ---->load callbacks
-    cfg.callbacks = load_callbacks(cfg)
+    cfg.callbacks = []  # load_callbacks(cfg)
 
     # ---->Define Data
     DataInterface_dict = {
@@ -62,7 +62,7 @@ def main(cfg):
         # logger=cfg.load_loggers,
         callbacks=cfg.callbacks,
         max_epochs=cfg.General.epochs,
-        accelerator="gpu",
+        accelerator="cpu",
         devices=cfg.General.devices,
         # gpus=cfg.General.gpus,
         amp_level=cfg.General.amp_level,
