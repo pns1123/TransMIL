@@ -1,20 +1,45 @@
-__author__ = 'shaozc'
+__author__ = "shaozc"
 
 import torch
 import torch.nn as nn
 
-from .boundary_loss import BDLoss, SoftDiceLoss, DC_and_BD_loss, HDDTBinaryLoss,\
-     DC_and_HDBinary_loss, DistBinaryDiceLoss
-from .dice_loss import GDiceLoss, GDiceLossV2, SSLoss, SoftDiceLoss,\
-     IoULoss, TverskyLoss, FocalTversky_loss, AsymLoss, DC_and_CE_loss,\
-         PenaltyGDiceLoss, DC_and_topk_loss, ExpLog_loss
+from .boundary_loss import (
+    BDLoss,
+    SoftDiceLoss,
+    DC_and_BD_loss,
+    HDDTBinaryLoss,
+    DC_and_HDBinary_loss,
+    DistBinaryDiceLoss,
+)
+from .dice_loss import (
+    GDiceLoss,
+    GDiceLossV2,
+    SSLoss,
+    SoftDiceLoss,
+    IoULoss,
+    TverskyLoss,
+    FocalTversky_loss,
+    AsymLoss,
+    DC_and_CE_loss,
+    PenaltyGDiceLoss,
+    DC_and_topk_loss,
+    ExpLog_loss,
+)
 from .focal_loss import FocalLoss
 from .hausdorff import HausdorffDTLoss, HausdorffERLoss
 from .lovasz_loss import LovaszSoftmax
-from .ND_Crossentropy import CrossentropyND, TopKLoss, WeightedCrossEntropyLoss,\
-     WeightedCrossEntropyLossV2, DisPenalizedCE
+from .ND_Crossentropy import (
+    CrossentropyND,
+    TopKLoss,
+    WeightedCrossEntropyLoss,
+    WeightedCrossEntropyLossV2,
+    DisPenalizedCE,
+)
+
+from .sigmoid_bce_sum import SigmoidBCESum
 
 from pytorch_toolbelt import losses as L
+
 
 def create_loss(args, w1=1.0, w2=0.5):
     conf_loss = args.base_loss
@@ -23,7 +48,7 @@ def create_loss(args, w1=1.0, w2=0.5):
     loss = None
     if hasattr(nn, conf_loss):
         loss = getattr(nn, conf_loss)()
-    #binary loss
+    # binary loss
     elif conf_loss == "focal":
         loss = L.BinaryFocalLoss()
     elif conf_loss == "jaccard":
@@ -48,18 +73,25 @@ def create_loss(args, w1=1.0, w2=0.5):
         loss = L.JointLoss(BCEWithLogitsLoss(), L.BinaryDiceLogLoss(), w1, w2)
     elif conf_loss == "reduced_focal":
         loss = L.BinaryFocalLoss(reduced=True)
+    elif conf_loss == "SigmoidBCESum":
+        loss = SigmoidBCESum()
     else:
         assert False and "Invalid loss"
         raise ValueError
     return loss
 
+
 import argparse
+
+
 def make_parse():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--base-loss', default='CrossEntropyLoss',type=str)
+    parser.add_argument("--base-loss", default="CrossEntropyLoss", type=str)
     args = parser.parse_args()
     return args
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     args = make_parse()
     myloss = create_loss(args)
     data = torch.randn(2, 3)

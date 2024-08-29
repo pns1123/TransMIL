@@ -27,14 +27,14 @@ class TestData(data.Dataset):
         # self.data = self.slide_data[self.slide_data["group"] == state]["filename"]
         # self.label = self.slide_data[self.slide_data["group"] == state]["label0"]
         self.data = self.slide_data["filename"]
-        self.label = self.slide_data["label0"]
+        self.label = self.slide_data[["label0", "label1"]].values
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
         slide_id = self.data[idx]
-        label = int(self.label[idx])
+        label = torch.tensor(self.label[idx], dtype=torch.float32)
         full_path = Path(self.feature_dir) / f"{slide_id}.pt"
         features = torch.load(full_path)
 

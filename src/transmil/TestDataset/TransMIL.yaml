@@ -43,4 +43,4 @@ Optimizer:
     weight_decay: 0.00001
 
 Loss:
-    base_loss: CrossEntropyLoss
+    base_loss: SigmoidBCESum

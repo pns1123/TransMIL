@@ -79,17 +79,24 @@ class ModelInterface(pl.LightningModule):
         data, label = batch
         results_dict = self.model(data=data, label=label)
         logits = results_dict["logits"]
-        Y_prob = results_dict["Y_prob"]
-        Y_hat = results_dict["Y_hat"]
+        # Y_prob = results_dict["Y_prob"]
+        # Y_hat = results_dict["Y_hat"]
 
         # ---->loss
+        print("LOSS COMPUTATION")
+        print("logits.shape", logits.shape)
+        print("label.shape", label.shape)
+        print("logits", logits)
+        print("label", label)
         loss = self.loss(logits, label)
+        print("loss", loss)
+        print("")
 
         # ---->acc log
-        Y_hat = int(Y_hat)
-        Y = int(label)
-        self.data[Y]["count"] += 1
-        self.data[Y]["correct"] += Y_hat == Y
+        # Y_hat = int(Y_hat)
+        # Y = int(label)
+        # self.data[Y]["count"] += 1
+        # self.data[Y]["correct"] += Y_hat == Y
 
         return {"loss": loss}
 
