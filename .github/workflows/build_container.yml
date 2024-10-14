@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: gitlab.lrz.de:5005
-  IMAGE_NAME: gitlab.lrz.de:5005/clinicaldatascience/${{ github.repository }}
+  IMAGE_NAME: clinicaldatascience/${{ github.repository }}
 
 jobs:
   build-and-push-image:
