@@ -38,5 +38,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: transmil
+          tags: name/app:transmil,name/app:latest
