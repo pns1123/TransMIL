@@ -7,8 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: gitlab.lrz.de:5005
-  IMAGE_NAME: clinicaldatascience/${{ github.repository }}
+  IMAGE_NAME: wsi_neudeg
 
 jobs:
   build-and-push-image:
@@ -24,15 +23,15 @@ jobs:
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.LRZ_USER_NAME }}
-          password: ${{ secrets.LRZ_PASSWORD }}
+          registry: ${{ vars.GITLAB_REGISTRY }}
+          username: ${{ secrets.GITLAB_REGISTRY_TOKEN_USERNAME }}
+          password: ${{ secrets.GITLAB_REGISTRY_TOKEN_PASSWORD }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ vars.GITLAB_REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -40,4 +39,4 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: transmil
