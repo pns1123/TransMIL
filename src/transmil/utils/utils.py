@@ -16,12 +16,12 @@ from pytorch_lightning import loggers as pl_loggers
 
 
 def load_loggers(cfg):
-    log_path = cfg.General.log_path
+    log_path = cfg.Logs.base_dir
     Path(log_path).mkdir(exist_ok=True, parents=True)
-    log_name = Path(cfg.config).parent
-    version_name = Path(cfg.config).name[:-5]
-    cfg.log_path = Path(log_path) / log_name / version_name / f"fold{cfg.Data.fold}"
-    print(f"---->Log dir: {cfg.log_path}")
+    log_name = cfg.Logs.name
+    version_name = cfg.Logs.version_name
+    cfg.Logs.run_dir = Path(log_path) / log_name / version_name / f"fold{cfg.Data.fold}"
+    print(f"---->Log dir: {cfg.Logs.run_dir}")
 
     # ---->TensorBoard
     tb_logger = pl_loggers.TensorBoardLogger(

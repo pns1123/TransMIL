@@ -238,7 +238,7 @@ class ModelInterface(pl.LightningModule):
         to overwrite the corresponding value in self.hparams.
         """
         class_args = inspect.getargspec(Model.__init__).args[1:]
-        inkeys = self.hparams.model.keys()
+        inkeys = self.hparams.model.model_dump().keys()
         args1 = {}
         for arg in class_args:
             if arg in inkeys:

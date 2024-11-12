@@ -44,4 +44,3 @@ Optimizer:
 
 Loss:
     base_loss: CrossEntropyLoss
-
