@@ -1,3 +1,4 @@
+test_data/
 lightning_logs/
 logs/
 src/transmil/TestDataset/pt_files

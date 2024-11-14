@@ -40,10 +40,10 @@ class DataLoaderSettings(BaseSettings):
 
 
 class DataSettings(BaseSettings):
-    dataset_name: str = "test_data"
+    dataset_name: str = "neudeg_data"
     data_shuffle: bool = False
-    data_dir: str = "TestDataset/pt_files/"
-    label_dir: str = "dataset_csv/test_dataset/"
+    data_dir: str = "test_data/pt_files/"
+    label_dir: str = "test_data"
     fold: int = 0
     nfold: int = 4
     train_dataloader: DataLoaderSettings = DataLoaderSettings()
