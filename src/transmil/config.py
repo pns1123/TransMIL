@@ -3,7 +3,6 @@ from typing import Optional
 from pydantic_settings import BaseSettings
 
 
-
 class GeneralSettings(BaseSettings):
     comment: Optional[str] = None
     seed: int = 2021
@@ -18,6 +17,7 @@ class GeneralSettings(BaseSettings):
     frozen_bn: bool = False
     patience: int = 10
     server: str = "train"  # can be set as "train" or "test"
+    accelerator: str = "cpu"
 
     class Config:
         env_prefix = "GENERAL_"
@@ -31,7 +31,6 @@ class LogsSettings(BaseSettings):
 
     class Config:
         env_prefix = "LOGS_"
-
 
 
 class DataLoaderSettings(BaseSettings):
@@ -55,7 +54,7 @@ class DataSettings(BaseSettings):
 
 class ModelSettings(BaseSettings):
     name: str = "TransMIL"
-    n_classes: int = 2
+    n_classes: int = 5
 
     class Config:
         env_prefix = "MODEL_"
