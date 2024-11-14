@@ -50,7 +50,7 @@ def main(cfg):
         # logger=loggers,
         callbacks=callbacks,
         max_epochs=cfg.General.epochs,
-        accelerator="cpu",
+        accelerator=cfg.General.accelerator,
         # devices=cfg.General.devices,
         # gpus=cfg.General.gpus,
         # amp_level=cfg.General.amp_level,
