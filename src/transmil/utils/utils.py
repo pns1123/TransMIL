@@ -1,3 +1,4 @@
+from functools import reduce
 from pathlib import Path
 
 # ---->read yaml
@@ -20,7 +21,9 @@ def load_loggers(cfg):
     Path(log_path).mkdir(exist_ok=True, parents=True)
     log_name = cfg.Logs.name
     version_name = cfg.Logs.version_name
-    cfg.Logs.run_dir = Path(log_path) / log_name / version_name / f"fold{cfg.Data.fold}"
+    cfg.Logs.run_dir = (
+        Path(log_path) / log_name / version_name / f"split{cfg.Data.fold}"
+    )
     print(f"---->Log dir: {cfg.Logs.run_dir}")
 
     # ---->TensorBoard
@@ -32,13 +35,28 @@ def load_loggers(cfg):
         default_hp_metric=False,
     )
     # ---->CSV
+    print("CSV LOGGER PATH: ", log_path + str(log_name))
     csv_logger = pl_loggers.CSVLogger(
         log_path + str(log_name),
         name=version_name,
-        version=f"fold{cfg.Data.fold}",
+        version=f"split{cfg.Data.fold}",
     )
 
-    return [tb_logger, csv_logger]
+    return csv_logger
+
+
+def __split_tensor(metric: str, t):
+    if t.dim() != 1:
+        raise ValueError(
+            "tensor {t} must be of dimension 1 but is of dimension {t.dim()}"
+        )
+
+    return {f"{metric}_{k}": x for k, x in enumerate(t)}
+
+
+def split_metrics_tensors(metrics: dict) -> dict:
+    scalar_metrics = [__split_tensor(key, val) for key, val in metrics.items()]
+    return reduce(lambda acc, x: {**acc, **x}, scalar_metrics, {})
 
 
 # ---->load Callback

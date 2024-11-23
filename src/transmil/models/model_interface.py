@@ -8,7 +8,7 @@ import pandas as pd
 # ---->
 from MyOptimizer import create_optimizer
 from MyLoss import create_loss
-from utils.utils import cross_entropy_torch
+from utils.utils import split_metrics_tensors
 
 # ---->
 import torch
@@ -31,37 +31,23 @@ class ModelInterface(pl.LightningModule):
         self.n_classes = model.n_classes
         self.log_path = kargs["log"]
 
-        # ---->acc
-        self.data = [{"count": 0, "correct": 0} for i in range(self.n_classes)]
-
         # ---->Metrics
-        if self.n_classes > 2:
-            self.AUROC = torchmetrics.AUROC(
-                task="multiclass", average="macro", num_classes=self.n_classes
-            )
-            metrics = torchmetrics.MetricCollection(
-                [
-                    # torchmetrics.Accuracy(task="multiclass", average="micro"),
-                    # torchmetrics.CohenKappa(task="multiclass"),
-                    # torchmetrics.F1(num_classes=self.n_classes, average="macro"),
-                    # torchmetrics.Recall(average="macro", num_classes=self.n_classes),
-                    # torchmetrics.Precision(average="macro", num_classes=self.n_classes),
-                    # torchmetrics.Specificity(
-                    #    average="macro", num_classes=self.n_classes
-                    # ),
-                ]
-            )
-        else:
-            self.AUROC = torchmetrics.AUROC(task="binary", average="macro")
-            metrics = torchmetrics.MetricCollection(
-                [
-                    # torchmetrics.Accuracy(task="binary", average="micro"),
-                    # torchmetrics.CohenKappa(num_classes=2),
-                    # torchmetrics.F1(num_classes=2, average="macro"),
-                    # torchmetrics.Recall(average="macro", num_classes=2),
-                    # torchmetrics.Precision(average="macro", num_classes=2),
-                ]
-            )
+        metrics = torchmetrics.MetricCollection(
+            [
+                torchmetrics.classification.MultilabelAccuracy(
+                    num_labels=self.n_classes, threshold=0.0, average="none",
+                ),
+                torchmetrics.classification.MultilabelPrecision(
+                    num_labels=self.n_classes, threshold=0.0, average="none",
+                ),
+                torchmetrics.classification.MultilabelRecall(
+                    num_labels=self.n_classes, threshold=0.0, average="none",
+                ),
+                torchmetrics.classification.MultilabelAUROC(
+                    num_labels=self.n_classes, average="none"
+                ),
+            ]
+        )
         self.valid_metrics = metrics.clone(prefix="val_")
         self.test_metrics = metrics.clone(prefix="test_")
 
@@ -77,99 +63,31 @@ class ModelInterface(pl.LightningModule):
         return items
 
     def training_step(self, batch, batch_idx):
-        # ---->inference
         data, label = batch
-        results_dict = self.model(data=data, label=label)
-        logits = results_dict["logits"]
-        # Y_prob = results_dict["Y_prob"]
-        # Y_hat = results_dict["Y_hat"]
+        logits = self.model(data=data, label=label)
 
-        # ---->loss
-        print("LOSS COMPUTATION")
-        print("logits.shape", logits.shape)
-        print("label.shape", label.shape)
-        print("logits", logits)
-        print("label", label)
         loss = self.loss(logits, label)
-        print("loss", loss)
-        print("")
-
-        # ---->acc log
-        # Y_hat = int(Y_hat)
-        # Y = int(label)
-        # self.data[Y]["count"] += 1
-        # self.data[Y]["correct"] += Y_hat == Y
+        self.log_dict({"loss": loss}, on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
         return {"loss": loss}
 
     def training_epoch_end(self, training_step_outputs):
-        for c in range(self.n_classes):
-            count = self.data[c]["count"]
-            correct = self.data[c]["correct"]
-            if count == 0:
-                acc = None
-            else:
-                acc = float(correct) / count
-            print("class {}: acc {}, correct {}/{}".format(c, acc, correct, count))
-        self.data = [{"count": 0, "correct": 0} for i in range(self.n_classes)]
+        pass
 
     def validation_step(self, batch, batch_idx):
         data, label = batch
-        results_dict = self.model(data=data, label=label)
-        logits = results_dict["logits"]
-        Y_prob = results_dict["Y_prob"]
-        Y_hat = results_dict["Y_hat"]
-
-        # ---->acc log
-        Y = int(label)
-        self.data[Y]["count"] += 1
-        self.data[Y]["correct"] += Y_hat.item() == Y
-
-        return {"logits": logits, "Y_prob": Y_prob, "Y_hat": Y_hat, "label": label}
+        logits = self.model(data=data, label=label)
+        return {"logits": logits, "label": label}
 
     def validation_epoch_end(self, val_step_outputs):
-        pass
+        logits = torch.stack([x["logits"] for x in val_step_outputs], dim=0)
+        target = torch.stack([x["label"] for x in val_step_outputs], dim=0).to(torch.uint8)
 
-    def _validation_epoch_end(self, val_step_outputs):
-        logits = torch.cat([x["logits"] for x in val_step_outputs], dim=0)
-        probs = torch.cat([x["Y_prob"] for x in val_step_outputs], dim=0)
-        max_probs = torch.stack([x["Y_hat"] for x in val_step_outputs])
-        target = torch.stack([x["label"] for x in val_step_outputs], dim=0)
+        metrics = self.valid_metrics(logits.squeeze(), target.squeeze())
 
-        # ---->
-        self.log(
-            "val_loss",
-            cross_entropy_torch(logits, target),
-            prog_bar=True,
-            on_epoch=True,
-            logger=True,
-        )
-        self.log(
-            "auc",
-            self.AUROC(probs, target.squeeze()),
-            prog_bar=True,
-            on_epoch=True,
-            logger=True,
-        )
-        self.log_dict(
-            self.valid_metrics(max_probs.squeeze(), target.squeeze()),
-            on_epoch=True,
-            logger=True,
-        )
+        self.log_dict(split_metrics_tensors(metrics), prog_bar=True, on_epoch=True, logger=True)
 
-        # ---->acc log
-        for c in range(self.n_classes):
-            count = self.data[c]["count"]
-            correct = self.data[c]["correct"]
-            if count == 0:
-                acc = None
-            else:
-                acc = float(correct) / count
-            print("class {}: acc {}, correct {}/{}".format(c, acc, correct, count))
-        self.data = [{"count": 0, "correct": 0} for i in range(self.n_classes)]
-
-        # ---->random, if shuffle data, change seed
-        if self.shuffle == True:
+        if self.shuffle:
             self.count = self.count + 1
             random.seed(self.count * 50)
 
@@ -179,42 +97,20 @@ class ModelInterface(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         data, label = batch
-        results_dict = self.model(data=data, label=label)
-        logits = results_dict["logits"]
-        Y_prob = results_dict["Y_prob"]
-        Y_hat = results_dict["Y_hat"]
+        logits = self.model(data=data, label=label)
+        return {"logits": logits, "label": label}
 
-        # ---->acc log
-        Y = int(label)
-        self.data[Y]["count"] += 1
-        self.data[Y]["correct"] += Y_hat.item() == Y
+    def test_epoch_end(self, test_step_outputs):
+        logits = torch.stack([x["logits"] for x in test_step_outputs], dim=0)
+        target = torch.stack([x["label"] for x in test_step_outputs], dim=0).to(
+            torch.uint8
+        )
 
-        return {"logits": logits, "Y_prob": Y_prob, "Y_hat": Y_hat, "label": label}
-
-    def test_epoch_end(self, output_results):
-        probs = torch.cat([x["Y_prob"] for x in output_results], dim=0)
-        max_probs = torch.stack([x["Y_hat"] for x in output_results])
-        target = torch.stack([x["label"] for x in output_results], dim=0)
-
-        # ---->
-        auc = self.AUROC(probs, target.squeeze())
-        metrics = self.test_metrics(max_probs.squeeze(), target.squeeze())
-        metrics["auc"] = auc
+        metrics = self.test_metrics(logits.squeeze(), target.squeeze())
         for keys, values in metrics.items():
             print(f"{keys} = {values}")
             metrics[keys] = values.cpu().numpy()
-        print()
-        # ---->acc log
-        for c in range(self.n_classes):
-            count = self.data[c]["count"]
-            correct = self.data[c]["correct"]
-            if count == 0:
-                acc = None
-            else:
-                acc = float(correct) / count
-            print("class {}: acc {}, correct {}/{}".format(c, acc, correct, count))
-        self.data = [{"count": 0, "correct": 0} for i in range(self.n_classes)]
-        # ---->
+
         result = pd.DataFrame([metrics])
         result.to_csv(self.log_path / "result.csv")
 

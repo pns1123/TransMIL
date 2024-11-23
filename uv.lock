@@ -144,7 +144,7 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "imgaug" },
     { name = "numpy" },
-    { name = "opencv-python-headless" },
+    { name = "opencv-python" },
     { name = "pyyaml" },
     { name = "scipy" },
 ]
@@ -1451,17 +1451,14 @@ wheels = [
 
 [[package]]
 name = "torch"
-version = "1.11.0"
-source = { registry = "https://pypi.org/simple" }
+version = "1.11.0+cu113"
+source = { registry = "https://download.pytorch.org/whl/cu113" }
 dependencies = [
     { name = "typing-extensions" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/76/96/3fd30662981043ac6fa1dc4f2cf8f5fa5401cc125ff7b7bf1536eae5db28/torch-1.11.0-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:62052b50fffc29ca7afc0c04ef8206b6f1ca9d10629cb543077e12967e8d0398", size = 750593273 },
-    { url = "https://files.pythonhosted.org/packages/b2/11/72b6ba00907441486dbb58df9ab7b667f0f51de75a3904261e70e85a3f06/torch-1.11.0-cp310-cp310-manylinux2014_aarch64.whl", hash = "sha256:866bfba29ac98dec35d893d8e17eaec149d0ac7a53be7baae5c98069897db667", size = 50901403 },
-    { url = "https://files.pythonhosted.org/packages/ea/50/f249331269934c911a47846ccd9315f7a63941300b832d887956f60c249b/torch-1.11.0-cp310-cp310-win_amd64.whl", hash = "sha256:951640fb8db308a59d9b510e7d1ad910aff92913323bbe4bc75435347ddd346d", size = 157987904 },
-    { url = "https://files.pythonhosted.org/packages/87/ac/31d233b21345c4f713109e5e933a5a99473d31049c03f004ffb6cc24785d/torch-1.11.0-cp310-none-macosx_10_9_x86_64.whl", hash = "sha256:5d77b5ece78fdafa5c7f42995ff9474399d22571cd6b2de21a5d666306a2ff8c", size = 130100765 },
-    { url = "https://files.pythonhosted.org/packages/36/0f/91edc4a0342aa2388a1845484a134aa88730a8632cfe4ad6c761f4ff4114/torch-1.11.0-cp310-none-macosx_11_0_arm64.whl", hash = "sha256:b5a38682769b544c875ecc34bcb81fbad5c922139b61319aacffcfd8a32f528c", size = 43134611 },
+    { url = "https://download.pytorch.org/whl/cu113/torch-1.11.0%2Bcu113-cp310-cp310-linux_x86_64.whl", hash = "sha256:a68c33657a546131eb9bc44e2a98d2fa704aafae861460b051b82813852ccb44" },
+    { url = "https://download.pytorch.org/whl/cu113/torch-1.11.0%2Bcu113-cp310-cp310-win_amd64.whl", hash = "sha256:ddc57495195aa2456e78bfc7d8d3f45dabbb8b7b268b3b5dbed4f0e4db492f33" },
 ]
 
 [[package]]
@@ -1530,7 +1527,6 @@ dependencies = [
     { name = "frozenlist" },
     { name = "fsspec" },
     { name = "grpcio" },
-    { name = "idna" },
     { name = "imageio" },
     { name = "imgaug" },
     { name = "jinja2" },
@@ -1606,7 +1602,6 @@ requires-dist = [
     { name = "frozenlist", specifier = "==1.4.1" },
     { name = "fsspec", specifier = "==2024.6.1" },
     { name = "grpcio", specifier = "==1.66.0" },
-    { name = "idna", specifier = "==3.8" },
     { name = "imageio", specifier = "==2.35.1" },
     { name = "imgaug", specifier = "==0.4.0" },
     { name = "jinja2", specifier = "==3.1.4" },
@@ -1654,7 +1649,7 @@ requires-dist = [
     { name = "tensorboard", specifier = "==2.17.1" },
     { name = "tensorboard-data-server", specifier = "==0.7.2" },
     { name = "tifffile", specifier = "==2024.8.10" },
-    { name = "torch", specifier = "==1.11.0" },
+    { name = "torch", specifier = "==1.11.0+cu113", index = "https://download.pytorch.org/whl/cu113" },
     { name = "torchmetrics", specifier = "==1.4.1" },
     { name = "torchvision" },
     { name = "tqdm", specifier = "==4.66.5" },

@@ -1,5 +1,7 @@
+import time
+
 from pydantic import Field
-from typing import Optional
+from typing import Literal, Optional
 from pydantic_settings import BaseSettings
 
 
@@ -12,12 +14,13 @@ class GeneralSettings(BaseSettings):
     gpus: list[int] = [2]
     multi_gpu_mode: str = "dp"
     devices: int = 1
-    epochs: int = Field(200, alias="epoch")  # alias to match yaml key name
+    epochs: int = Field(1, alias="epoch")  # alias to match yaml key name
     grad_acc: int = 2
     frozen_bn: bool = False
     patience: int = 10
-    server: str = "train"  # can be set as "train" or "test"
+    server: str = "train"  # "train"  # can be set as "train" or "test"
     accelerator: str = "cpu"
+    path_to_eval_checkpoint: str | None = None  # needs to be set for testing
 
     class Config:
         env_prefix = "GENERAL_"
@@ -25,8 +28,8 @@ class GeneralSettings(BaseSettings):
 
 class LogsSettings(BaseSettings):
     base_dir: str = "logs/"
-    name: str = "TEST_NAME"
-    version_name: str = "TEST_VERSION"
+    name: str = "neudeg"
+    version_name: str = str(int(time.time()))
     run_dir: str | None = None
 
     class Config:
@@ -36,17 +39,19 @@ class LogsSettings(BaseSettings):
 class DataLoaderSettings(BaseSettings):
     batch_size: int = 1
     num_workers: int = 2
+    mode: Literal["train", "test", "validation"]
 
 
 class DataSettings(BaseSettings):
     dataset_name: str = "neudeg_data"
     data_shuffle: bool = False
     data_dir: str = "test_data/pt_files/"
-    label_dir: str = "test_data"
+    label_file: str = "test_data/dev_labels.csv"
     fold: int = 0
     nfold: int = 4
-    train_dataloader: DataLoaderSettings = DataLoaderSettings()
-    test_dataloader: DataLoaderSettings = DataLoaderSettings()
+    train_dataloader: DataLoaderSettings = DataLoaderSettings(mode="train")
+    test_dataloader: DataLoaderSettings = DataLoaderSettings(mode="test")
+    validation_dataloader: DataLoaderSettings = DataLoaderSettings(mode="validation")
 
     class Config:
         env_prefix = "DATA_"

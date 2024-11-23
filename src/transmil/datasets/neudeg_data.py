@@ -10,7 +10,7 @@ from torch.utils.data import dataloader
 
 
 class NeudegData(data.Dataset):
-    def __init__(self, dataset_cfg=None, state=None):
+    def __init__(self, mode, dataset_cfg=None):
         # Set all input args as attributes
         self.__dict__.update(locals())
         self.dataset_cfg = dataset_cfg
@@ -19,8 +19,8 @@ class NeudegData(data.Dataset):
         self.nfolds = self.dataset_cfg.nfold
         self.fold = self.dataset_cfg.fold
         self.feature_dir = self.dataset_cfg.data_dir
-        self.csv_path = os.path.join(self.dataset_cfg.label_dir, f"fold{self.fold}.csv")
-        self.slide_data = pd.read_csv(self.csv_path, index_col=0)
+        all_labels = pd.read_csv(self.dataset_cfg.label_file, index_col=0)
+        self.slide_data = all_labels[all_labels[f"split{self.fold}"] == mode]
 
         # ---->order
         self.shuffle = self.dataset_cfg.data_shuffle

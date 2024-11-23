@@ -53,4 +53,3 @@ class CamelData(data.Dataset):
 
 
         return features, label
-

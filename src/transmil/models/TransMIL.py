@@ -84,10 +84,7 @@ class TransMIL(nn.Module):
 
         # ---->predict
         logits = self._fc2(h)  # [B, n_classes]
-        Y_hat = torch.argmax(logits, dim=1)
-        Y_prob = F.softmax(logits, dim=1)
-        results_dict = {"logits": logits, "Y_prob": Y_prob, "Y_hat": Y_hat}
-        return results_dict
+        return logits
 
 
 if __name__ == "__main__":
