@@ -67,7 +67,7 @@ class ModelInterface(pl.LightningModule):
         logits = self.model(data=data, label=label)
 
         loss = self.loss(logits, label)
-        self.log_dict({"loss": loss}, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log_dict({"loss": loss}, on_step=False, on_epoch=True, prog_bar=False, logger=True)
 
         return {"loss": loss}
 
@@ -85,7 +85,7 @@ class ModelInterface(pl.LightningModule):
 
         metrics = self.valid_metrics(logits.squeeze(), target.squeeze())
 
-        self.log_dict(split_metrics_tensors(metrics), prog_bar=True, on_epoch=True, logger=True)
+        self.log_dict(split_metrics_tensors(metrics), prog_bar=False, on_epoch=True, logger=True)
 
         if self.shuffle:
             self.count = self.count + 1
