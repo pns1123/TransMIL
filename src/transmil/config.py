@@ -2,6 +2,7 @@ import time
 
 from pydantic import Field
 from typing import Literal, Optional
+from pydantic import root_validator
 from pydantic_settings import BaseSettings
 
 
@@ -37,8 +38,8 @@ class LogsSettings(BaseSettings):
 
 
 class DataLoaderSettings(BaseSettings):
-    batch_size: int = 1
-    num_workers: int = 2
+    batch_size: int
+    num_workers: int
     mode: Literal["train", "test", "validation"]
 
 
@@ -49,9 +50,26 @@ class DataSettings(BaseSettings):
     label_file: str = "test_data/dev_labels.csv"
     fold: int = 0
     nfold: int = 4
-    train_dataloader: DataLoaderSettings = DataLoaderSettings(mode="train")
-    test_dataloader: DataLoaderSettings = DataLoaderSettings(mode="test")
-    validation_dataloader: DataLoaderSettings = DataLoaderSettings(mode="validation")
+    batch_size: int = 1
+    num_workers: int = 2
+    train_dataloader: DataLoaderSettings = None
+    test_dataloader: DataLoaderSettings = None
+    validation_dataloader: DataLoaderSettings = None
+
+    @root_validator(pre=True)
+    def create_dataloaders(cls, values):
+        batch_size = values.get("batch_size", 1)
+        num_workers = values.get("num_workers", 2)
+        values["train_dataloader"] = DataLoaderSettings(
+            mode="train", batch_size=batch_size, num_workers=num_workers
+        )
+        values["test_dataloader"] = DataLoaderSettings(
+            mode="test", batch_size=batch_size, num_workers=num_workers
+        )
+        values["validation_dataloader"] = DataLoaderSettings(
+            mode="validation", batch_size=batch_size, num_workers=num_workers
+        )
+        return values
 
     class Config:
         env_prefix = "DATA_"
