@@ -52,7 +52,7 @@ class DataInterface(pl.LightningDataModule):
         """
         # Assign train/val datasets for use in dataloaders
         if stage == "fit" or stage is None:
-            self.train_dataset = self.instancialize(mode="test")
+            self.train_dataset = self.instancialize(mode="train")
             self.val_dataset = self.instancialize(mode="validation")
 
         # Assign test dataset for use in dataloader(s)
