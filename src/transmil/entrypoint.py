@@ -77,4 +77,5 @@ def main(cfg):
 
 if __name__ == "__main__":
     cfg = ConfigSettings()
+    print(cfg)
     main(cfg)
