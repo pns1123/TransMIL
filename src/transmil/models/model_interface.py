@@ -49,6 +49,7 @@ class ModelInterface(pl.LightningModule):
             ]
         )
         self.valid_metrics = metrics.clone(prefix="val_")
+        self.training_metrics = metrics.clone(prefix="train_")
         self.test_metrics = metrics.clone(prefix="test_")
 
         # --->random
@@ -69,10 +70,15 @@ class ModelInterface(pl.LightningModule):
         loss = self.loss(logits, label)
         self.log_dict({"loss": loss}, on_step=False, on_epoch=True, prog_bar=False, logger=True)
 
-        return {"loss": loss}
+        return {"loss": loss, "logits": logits, "label": label}
 
     def training_epoch_end(self, training_step_outputs):
-        pass
+        logits = torch.stack([x["logits"] for x in training_step_outputs], dim=0)
+        target = torch.stack([x["label"] for x in training_step_outputs], dim=0).to(torch.uint8)
+
+        metrics = self.training_metrics(logits.squeeze(), target.squeeze())
+
+        self.log_dict(split_metrics_tensors(metrics), prog_bar=False, on_epoch=True, logger=True)
 
     def validation_step(self, batch, batch_idx):
         data, label = batch
