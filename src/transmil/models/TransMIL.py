@@ -84,6 +84,7 @@ class TransMIL(nn.Module):
 
         # ---->predict
         logits = self._fc2(h)  # [B, n_classes]
+
         return logits
 
 

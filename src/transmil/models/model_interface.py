@@ -1,7 +1,6 @@
-import sys
-import numpy as np
 import inspect
 import importlib
+import json
 import random
 import pandas as pd
 
@@ -12,9 +11,8 @@ from utils.utils import split_metrics_tensors
 
 # ---->
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import torchmetrics
+import torch.nn.functional as F
 
 # ---->
 import pytorch_lightning as pl
@@ -32,25 +30,44 @@ class ModelInterface(pl.LightningModule):
         self.log_path = kargs["log"]
 
         # ---->Metrics
-        metrics = torchmetrics.MetricCollection(
+        inter_training_metrics = torchmetrics.MetricCollection(
             [
                 torchmetrics.classification.MultilabelAccuracy(
-                    num_labels=self.n_classes, threshold=0.0, average="none",
+                    num_labels=self.n_classes,
+                    threshold=0.0,
+                    average="none",
                 ),
                 torchmetrics.classification.MultilabelPrecision(
-                    num_labels=self.n_classes, threshold=0.0, average="none",
+                    num_labels=self.n_classes,
+                    threshold=0.0,
+                    average="none",
                 ),
                 torchmetrics.classification.MultilabelRecall(
-                    num_labels=self.n_classes, threshold=0.0, average="none",
+                    num_labels=self.n_classes,
+                    threshold=0.0,
+                    average="none",
                 ),
                 torchmetrics.classification.MultilabelAUROC(
                     num_labels=self.n_classes, average="none"
                 ),
             ]
         )
-        self.valid_metrics = metrics.clone(prefix="val_")
-        self.training_metrics = metrics.clone(prefix="train_")
-        self.test_metrics = metrics.clone(prefix="test_")
+
+        self.valid_metrics = inter_training_metrics.clone(prefix="val_")
+        self.training_metrics = inter_training_metrics.clone(prefix="train_")
+
+        self.test_metrics = torchmetrics.MetricCollection(
+            [
+                torchmetrics.classification.MultilabelROC(
+                    num_labels=self.n_classes,
+                    thresholds=10
+                ),
+                torchmetrics.classification.MultilabelPrecisionRecallCurve(
+                    num_labels=self.n_classes,
+                    thresholds=10
+                ),
+            ]
+        )
 
         # --->random
         self.shuffle = kargs["data"].data_shuffle
@@ -68,17 +85,23 @@ class ModelInterface(pl.LightningModule):
         logits = self.model(data=data, label=label)
 
         loss = self.loss(logits, label)
-        self.log_dict({"loss": loss}, on_step=False, on_epoch=True, prog_bar=False, logger=True)
+        self.log_dict(
+            {"loss": loss}, on_step=False, on_epoch=True, prog_bar=False, logger=True
+        )
 
         return {"loss": loss, "logits": logits, "label": label}
 
     def training_epoch_end(self, training_step_outputs):
         logits = torch.stack([x["logits"] for x in training_step_outputs], dim=0)
-        target = torch.stack([x["label"] for x in training_step_outputs], dim=0).to(torch.uint8)
+        target = torch.stack([x["label"] for x in training_step_outputs], dim=0).to(
+            torch.uint8
+        )
 
         metrics = self.training_metrics(logits.squeeze(), target.squeeze())
 
-        self.log_dict(split_metrics_tensors(metrics), prog_bar=False, on_epoch=True, logger=True)
+        self.log_dict(
+            split_metrics_tensors(metrics), prog_bar=False, on_epoch=True, logger=True
+        )
 
     def validation_step(self, batch, batch_idx):
         data, label = batch
@@ -87,11 +110,18 @@ class ModelInterface(pl.LightningModule):
 
     def validation_epoch_end(self, val_step_outputs):
         logits = torch.stack([x["logits"] for x in val_step_outputs], dim=0)
-        target = torch.stack([x["label"] for x in val_step_outputs], dim=0).to(torch.uint8)
+        target = torch.stack([x["label"] for x in val_step_outputs], dim=0).to(
+            torch.uint8
+        )
+
+        print("validation logits")
+        print(logits)
 
         metrics = self.valid_metrics(logits.squeeze(), target.squeeze())
 
-        self.log_dict(split_metrics_tensors(metrics), prog_bar=False, on_epoch=True, logger=True)
+        self.log_dict(
+            split_metrics_tensors(metrics), prog_bar=False, on_epoch=True, logger=True
+        )
 
         if self.shuffle:
             self.count = self.count + 1
@@ -107,18 +137,34 @@ class ModelInterface(pl.LightningModule):
         return {"logits": logits, "label": label}
 
     def test_epoch_end(self, test_step_outputs):
-        logits = torch.stack([x["logits"] for x in test_step_outputs], dim=0)
-        target = torch.stack([x["label"] for x in test_step_outputs], dim=0).to(
-            torch.uint8
+        logits = torch.stack([x["logits"] for x in test_step_outputs], dim=0).squeeze()
+
+        probabilities = F.sigmoid(logits)
+        target = (
+            torch.stack([x["label"] for x in test_step_outputs], dim=0)
+            .to(torch.uint8)
+            .squeeze()
         )
 
-        metrics = self.test_metrics(logits.squeeze(), target.squeeze())
-        for keys, values in metrics.items():
-            print(f"{keys} = {values}")
-            metrics[keys] = values.cpu().numpy()
+        metrics = self.test_metrics(probabilities, target)
 
-        result = pd.DataFrame([metrics])
-        result.to_csv(self.log_path / "result.csv")
+        roc_fpr, roc_tpr, roc_thresholds = metrics["MultilabelROC"]
+        prc_precision, prc_recall, prc_thresholds = metrics["MultilabelPrecisionRecallCurve"]
+
+        test_results = {
+            "logits": logits.cpu().tolist(),
+            "probabilities": probabilities.cpu().tolist(),
+            "target": target.cpu().tolist(),
+            "roc_fpr": roc_fpr.cpu().tolist(),
+            "roc_tpr": roc_tpr.cpu().tolist(),
+            "roc_thresholds": roc_thresholds.cpu().tolist(),
+            "prc_precision": prc_precision.cpu().tolist(),
+            "prc_recall": prc_recall.cpu().tolist(),
+            "prc_thresholds": prc_thresholds.cpu().tolist(),
+        }
+
+        with open(self.log_path / "result.json", "w") as fp:
+            json.dump(test_results, fp)
 
     def load_model(self):
         name = self.hparams.model.name
