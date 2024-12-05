@@ -59,12 +59,10 @@ class ModelInterface(pl.LightningModule):
         self.test_metrics = torchmetrics.MetricCollection(
             [
                 torchmetrics.classification.MultilabelROC(
-                    num_labels=self.n_classes,
-                    thresholds=10
+                    num_labels=self.n_classes, thresholds=10
                 ),
                 torchmetrics.classification.MultilabelPrecisionRecallCurve(
-                    num_labels=self.n_classes,
-                    thresholds=10
+                    num_labels=self.n_classes, thresholds=10
                 ),
             ]
         )
@@ -82,7 +80,7 @@ class ModelInterface(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         data, label = batch
-        logits = self.model(data=data, label=label)
+        logits = self.model(data=data, label=label)["logits"]
 
         loss = self.loss(logits, label)
         self.log_dict(
@@ -105,7 +103,7 @@ class ModelInterface(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         data, label = batch
-        logits = self.model(data=data, label=label)
+        logits = self.model(data=data, label=label)["logits"]
         return {"logits": logits, "label": label}
 
     def validation_epoch_end(self, val_step_outputs):
@@ -133,11 +131,15 @@ class ModelInterface(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         data, label = batch
-        logits = self.model(data=data, label=label)
-        return {"logits": logits, "label": label}
+        logits = self.model(data=data, label=label)["logits"]
+        sa1 = self.model(data=data, label=label)["sa1"]
+        sa2 = self.model(data=data, label=label)["sa2"]
+        return {"logits": logits, "label": label, "sa1": sa1, "sa2": sa2}
 
     def test_epoch_end(self, test_step_outputs):
         logits = torch.stack([x["logits"] for x in test_step_outputs], dim=0).squeeze()
+        sa1 = torch.stack([x["sa1"] for x in test_step_outputs], dim=0).squeeze()
+        sa2 = torch.stack([x["sa2"] for x in test_step_outputs], dim=0).squeeze()
 
         probabilities = F.sigmoid(logits)
         target = (
@@ -149,7 +151,9 @@ class ModelInterface(pl.LightningModule):
         metrics = self.test_metrics(probabilities, target)
 
         roc_fpr, roc_tpr, roc_thresholds = metrics["MultilabelROC"]
-        prc_precision, prc_recall, prc_thresholds = metrics["MultilabelPrecisionRecallCurve"]
+        prc_precision, prc_recall, prc_thresholds = metrics[
+            "MultilabelPrecisionRecallCurve"
+        ]
 
         test_results = {
             "logits": logits.cpu().tolist(),
@@ -161,6 +165,8 @@ class ModelInterface(pl.LightningModule):
             "prc_precision": prc_precision.cpu().tolist(),
             "prc_recall": prc_recall.cpu().tolist(),
             "prc_thresholds": prc_thresholds.cpu().tolist(),
+            "sa1": sa1.cpu().tolist(),
+            "sa2": sa2.cpu().tolist(),
         }
 
         with open(self.log_path / "result.json", "w") as fp:

@@ -71,13 +71,13 @@ class TransMIL(nn.Module):
         h = torch.cat((cls_tokens, h), dim=1)
 
         # ---->Translayer x1
-        h = self.layer1(h)  # [B, N, 512]
+        sa1 = self.layer1(h)  # [B, N, 512]
 
         # ---->PPEG
-        h = self.pos_layer(h, _H, _W)  # [B, N, 512]
+        h = self.pos_layer(sa1, _H, _W)  # [B, N, 512]
 
         # ---->Translayer x2
-        h = self.layer2(h)  # [B, N, 512]
+        sa2 = self.layer2(h)  # [B, N, 512]
 
         # ---->cls_token
         h = self.norm(h)[:, 0]
@@ -85,7 +85,7 @@ class TransMIL(nn.Module):
         # ---->predict
         logits = self._fc2(h)  # [B, n_classes]
 
-        return logits
+        return {"logits": logits, "sa1": sa1, "sa2": sa2}
 
 
 if __name__ == "__main__":
