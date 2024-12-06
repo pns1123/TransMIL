@@ -138,8 +138,6 @@ class ModelInterface(pl.LightningModule):
 
     def test_epoch_end(self, test_step_outputs):
         logits = torch.stack([x["logits"] for x in test_step_outputs], dim=0).squeeze()
-        sa1 = torch.stack([x["sa1"] for x in test_step_outputs], dim=0).squeeze()
-        sa2 = torch.stack([x["sa2"] for x in test_step_outputs], dim=0).squeeze()
 
         probabilities = F.sigmoid(logits)
         target = (
@@ -165,8 +163,6 @@ class ModelInterface(pl.LightningModule):
             "prc_precision": prc_precision.cpu().tolist(),
             "prc_recall": prc_recall.cpu().tolist(),
             "prc_thresholds": prc_thresholds.cpu().tolist(),
-            "sa1": sa1.cpu().tolist(),
-            "sa2": sa2.cpu().tolist(),
         }
 
         with open(self.log_path / "result.json", "w") as fp:

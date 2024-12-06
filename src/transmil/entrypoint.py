@@ -1,10 +1,10 @@
-import argparse
+import json
+import pandas as pd
 from pathlib import Path
-import numpy as np
-import glob
+import torch
 
 from datasets import DataInterface
-from models import ModelInterface
+from models import ModelInterface, TransMIL
 from config import ConfigSettings
 from utils.utils import load_loggers
 
@@ -63,16 +63,56 @@ def main(cfg):
     )
 
     # ---->train or test
-    if cfg.General.server == "train":
-        trainer.fit(model=model, datamodule=dm)
-    else:
-        model_path = cfg.General.path_to_eval_checkpoint
+    match cfg.General.server:
+        case "train":
+            trainer.fit(model=model, datamodule=dm)
+        case "test":
+            model_path = cfg.General.path_to_eval_checkpoint
 
-        if model_path is None:
-            raise ValueError("path_to_eval_checkpoint needs to be set for testing.")
+            if model_path is None:
+                raise ValueError("path_to_eval_checkpoint needs to be set for testing.")
 
-        new_model = model.load_from_checkpoint(checkpoint_path=model_path, cfg=cfg)
-        trainer.test(model=new_model, datamodule=dm)
+            new_model = model.load_from_checkpoint(checkpoint_path=model_path, cfg=cfg)
+            trainer.test(model=new_model, datamodule=dm)
+        case "full_predict":
+            model_path = cfg.General.path_to_eval_checkpoint
+
+            if model_path is None:
+                raise ValueError("path_to_eval_checkpoint needs to be set for testing.")
+
+            checkpoint = torch.load(model_path)  # , map_location=torch.device("cpu"))
+            state_dict = {
+                key.removeprefix("model."): val
+                for key, val in checkpoint["state_dict"].items()
+            }
+            print(state_dict.keys())
+            model = TransMIL.TransMIL(n_classes=cfg.Model.n_classes)
+            model.load_state_dict(state_dict)
+
+            full_data = pd.read_csv(cfg.Data.label_file, index_col=0)
+
+            slide_ids = [image_name.split(".")[0] for image_name in full_data["image"]]
+            labels = [json.loads(label_list) for label_list in full_data["label_list"]]
+
+            full_pred = {}
+            for slide_id, label in zip(slide_ids, labels):
+                full_path = Path(cfg.Data.data_dir) / f"{slide_id}pyramid.pt"
+                features = torch.load(full_path)[None, :, :]
+                logits = model(data=features)["logits"]
+                sa1 = model(data=features)["sa1"]
+                sa2 = model(data=features)["sa2"]
+                full_pred[slide_id] = {
+                    "logits": logits.cpu().tolist(),
+                    "sa1": sa1.cpu().tolist(),
+                    "sa2": sa2.cpu().tolist(),
+                    "labels": labels,
+                }
+
+            with open(cfg.Logs.run_dir / "full_pred.json", "w") as fp:
+                json.dump(full_pred, fp)
+
+        case _:
+            raise ValueError(f"server {cfg.General.server} invalid")
 
 
 if __name__ == "__main__":
