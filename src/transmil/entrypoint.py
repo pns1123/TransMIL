@@ -83,12 +83,11 @@ def main(cfg):
             if model_path is None:
                 raise ValueError("path_to_eval_checkpoint needs to be set for testing.")
 
-            checkpoint = torch.load(model_path, map_location=torch.device("cpu"))
+            checkpoint = torch.load(model_path)  # , map_location=torch.device("cpu"))
             state_dict = {
                 key.removeprefix("model."): val
                 for key, val in checkpoint["state_dict"].items()
             }
-            print(state_dict.keys())
             model = TransMIL.TransMIL(n_classes=cfg.Model.n_classes)
             model.load_state_dict(state_dict)
 
@@ -115,6 +114,7 @@ def main(cfg):
                     cfg.Logs.run_dir / "attention_scores" / f"{slide_id}.pt",
                 )
                 del sa1, sa2, features
+                print("completed prediction for", slide_id)
 
             with open(cfg.Logs.run_dir / "full_pred.json", "w") as fp:
                 json.dump(full_pred, fp)
