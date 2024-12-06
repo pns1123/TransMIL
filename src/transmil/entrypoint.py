@@ -76,11 +76,14 @@ def main(cfg):
             trainer.test(model=new_model, datamodule=dm)
         case "full_predict":
             model_path = cfg.General.path_to_eval_checkpoint
+            Path(cfg.Logs.run_dir / "attention_scores").mkdir(
+                parents=True, exist_ok=True
+            )
 
             if model_path is None:
                 raise ValueError("path_to_eval_checkpoint needs to be set for testing.")
 
-            checkpoint = torch.load(model_path)  # , map_location=torch.device("cpu"))
+            checkpoint = torch.load(model_path, map_location=torch.device("cpu"))
             state_dict = {
                 key.removeprefix("model."): val
                 for key, val in checkpoint["state_dict"].items()
@@ -99,14 +102,19 @@ def main(cfg):
                 full_path = Path(cfg.Data.data_dir) / f"{slide_id}pyramid.pt"
                 features = torch.load(full_path)[None, :, :]
                 logits = model(data=features)["logits"]
-                sa1 = model(data=features)["sa1"]
-                sa2 = model(data=features)["sa2"]
+                sa1 = model(data=features)["sa1"].to(torch.float16)
+                sa2 = model(data=features)["sa2"].to(torch.float16)
+
                 full_pred[slide_id] = {
                     "logits": logits.cpu().tolist(),
-                    "sa1": sa1.cpu().tolist(),
-                    "sa2": sa2.cpu().tolist(),
                     "labels": labels,
                 }
+
+                torch.save(
+                    {"sa1": sa1.cpu(), "sa2": sa2.cpu()},
+                    cfg.Logs.run_dir / "attention_scores" / f"{slide_id}.pt",
+                )
+                del sa1, sa2, features
 
             with open(cfg.Logs.run_dir / "full_pred.json", "w") as fp:
                 json.dump(full_pred, fp)
