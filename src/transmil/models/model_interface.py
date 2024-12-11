@@ -34,17 +34,14 @@ class ModelInterface(pl.LightningModule):
             [
                 torchmetrics.classification.MultilabelAccuracy(
                     num_labels=self.n_classes,
-                    threshold=0.0,
                     average="none",
                 ),
                 torchmetrics.classification.MultilabelPrecision(
                     num_labels=self.n_classes,
-                    threshold=0.0,
                     average="none",
                 ),
                 torchmetrics.classification.MultilabelRecall(
                     num_labels=self.n_classes,
-                    threshold=0.0,
                     average="none",
                 ),
                 torchmetrics.classification.MultilabelAUROC(
